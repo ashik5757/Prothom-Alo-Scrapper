@@ -1,0 +1,84 @@
+<div class="more _7ZpjE"><span class="load-more-content _7QoIj">আরও</span></div>
+
+curl -X DELETE "http://localhost:9200/prothomalo_articles"
+
+
+
+=======================
+
+Head Section with title, author, loaction, time in the element : <div class="story-head NKo24">
+
+
+
+Title : where main title in <h1 data-title-0="...."> {title text} </h1>
+
+Title Html :
+<div class="story-title-info BG103"><div class="print-entity-section-wrapper F93gk"><a target="_self" aria-label="জেলা" data-section-0="জেলা" class="vXi2j" href="https://www.prothomalo.com/bangladesh/district">জেলা</a></div><div><h1 data-title-0="দলীয় প্রধানের বাসভবনে ‘জেনারেল পার্টি’র কার্যালয়, সাইনবোর্ড-আসবাব কিছুই নেই" class="IiRps ">দলীয় প্রধানের বাসভবনে ‘জেনারেল পার্টি’র কার্যালয়, সাইনবোর্ড-আসবাব কিছুই নেই</h1></div></div>
+
+
+Author :
+<span data-author-0="প্রতিনিধি" class="contributor-name _8TSJC ">প্রতিনিধি</span>
+
+Author location :
+<span class="author-location _8-umj">বিরামপুর, দিনাজপুর</span>
+
+
+
+Published time :
+<time datetime="2025-06-25T12:33:08+06:00"><span>প্রকাশ: ২৫ জুন ২০২৫, ১২: ৩৩ </span></time>
+
+
+Image caption :
+<div class="cdKYX"><figcaption class="story-element-image-caption custom-gallery-image">নতুন রাজনৈতিক দল হিসেবে বাংলাদেশ নির্বাচন কমিশনে নিবন্ধনের জন্য দিনাজপুরের নবাবগঞ্জ থেকে আবেদন করা বাংলাদেশ জেনারেল পার্টির (বিজিপি) কেন্দ্রীয় কার্যালয় এটি। গতকাল মঙ্গলবার সকালে নবাবগঞ্জ উপজেলার জগন্নাথপুর এলাকার হক ভিলার পঞ্চম তলায়<span class="custom-gallery-image _3bj2K SZnJd">ছবি: প্রথম আলো</span></figcaption></div>
+
+
+Main Story:
+<div class="story-element story-element-text"><div><p>‘বাংলাদেশ জেনারেল পার্টি’ (বিজিপি) নামে নতুন একটি রাজনৈতিক দল নিবন্ধনের জন্য নির্বাচন কমিশনে আবেদন করেছে। দলটির দাপ্তরিক কার্যালয় হিসেবে দেখানো হয়েছে দিনাজপুরের নবাবগঞ্জ উপজেলার জগন্নাথপুর এলাকার হক ভিলার পঞ্চম তলা। তবে সরেজমিনে সেখানে দলীয় কার্যালয়ের কোনো অস্তিত্ব পাওয়া যায়নি।</p><p>গতকাল মঙ্গলবার সকালে হক ভিলার পঞ্চম তলায় গিয়ে দেখা যায়, ফ্লোরজুড়ে ইটের স্তূপ ও নির্মাণসামগ্রী ছড়িয়ে-ছিটিয়ে আছে। সেখানে দরজা-জানালাবিহীন দুটি ঘর রয়েছে, যেগুলোর মেঝেতেও ইট ও খোয়ার স্তূপ। কোনো আসবাব নেই, নেই কোনো দলীয় চিহ্ন বা সাইনবোর্ড।</p></div></div>
+
+
+
+curl -X POST "http://localhost:9200/prothomalo_articles/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+  "query": {
+    "term": {
+      "category.keyword": "bangladesh"
+    }
+  }
+}'
+
+
+
+curl -X GET "localhost:9200/prothomalo_articles/_mapping?pretty"
+GET /prothomalo_articles/_mapping
+
+
+
+"published_time": {
+  "type": "date"
+}
+
+
+
+
+
+
+curl -X PUT "http://localhost:9200/prothomalo_articles" -H "Content-Type: application/json" -d '{
+  "mappings": {
+    "properties": {
+      "category": { "type": "keyword" },
+      "inner_title": { "type": "text" },
+      "author": { "type": "text" },
+      "author_location": { "type": "text" },
+      "published_time": { "type": "date" },
+      "published_time_bn": { "type": "text" },
+      "main_story": { "type": "text" }
+    }
+  }
+}'
+
+
+# Terminal 1
+celery -A Prothom_Alo_Scrapper worker --pool=solo -l info
+
+# Terminal 2
+celery -A Prothom_Alo_Scrapper beat -l info
