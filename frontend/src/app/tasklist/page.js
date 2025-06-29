@@ -54,7 +54,9 @@ export default function TaskListPage() {
 
                 const data = await response.json();
 
-                const transformedData = data.map(task => ({
+                const tasksData = data.results || [];
+
+                const transformedData = tasksData.map(task => ({
                     ...task,
                     current_contents:  0,
                     key: task.id  // Add key for React
