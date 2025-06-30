@@ -78,7 +78,7 @@ A comprehensive web scraping system for monitoring and extracting news articles 
    ```
 3. **Open two terminal in root directory for backend and frontend.**
 
-    > NOTE : Make sure you're in the root directory : 
+    > NOTE : Make sure you're in the root directory and Docker is running background : 
 
     ```bash
     Prothom-Alo-Scrapper/           # root 
@@ -103,7 +103,23 @@ A comprehensive web scraping system for monitoring and extracting news articles 
    docker-compose up --build
    ```
 
+    > NOTE : Wait for few minutes to migrate and load all the containers.
 
+   <br>
+
+   ***Additional Notes:***
+
+   > To stop all the containers in this terminal PRESS `Ctrl+C` twice.
+
+   To start the containers only after stopping all the containers :
+   ```bash
+   docker-compose up --d
+   ```
+
+   To stop all the containers :
+   ```bash
+   docker-compose stop
+   ```
 
 5. **Build and start the frontend services**
    ```bash
@@ -114,6 +130,21 @@ A comprehensive web scraping system for monitoring and extracting news articles 
    ```
 
 
+   <br>
+
+   ***Additional Notes:***
+
+   > To stop all the containers in this terminal PRESS `Ctrl+C` twice.
+
+   To start the containers only after stopping all the containers :
+   ```bash
+   docker-compose up --d
+   ```
+
+   To stop all the containers :
+   ```bash
+   docker-compose stop
+   ```
 
 
 6. **Access the application**
