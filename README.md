@@ -11,7 +11,7 @@ A comprehensive web scraping system for monitoring and extracting news articles 
 - **Cache/Queue**: Redis for Celery task queue
 - **Web Scraping**: Selenium with Chrome/Chromium for dynamic content extraction
 
-## 📋 Features
+## `📋 Features
 
 ### Backend Features
 - RESTful API for managing scraping tasks
@@ -22,8 +22,7 @@ A comprehensive web scraping system for monitoring and extracting news articles 
 - Automatic task scheduling and execution
 
 ### Frontend Features
-- Dark theme interface
-- Task management dashboard
+
 - Advanced search and filtering
 - Real-time content viewing
 - Task editing capabilities
@@ -32,7 +31,7 @@ A comprehensive web scraping system for monitoring and extracting news articles 
 ### Scraping Features
 - Category-based article scraping
 - Dynamic content loading with infinite scroll
-- Article details extraction (title, author, location, content, publish time)
+- News Article details extraction (title, author, location, content, publish time)
 - Duplicate prevention
 - Configurable scraping limits and schedules
 
@@ -48,9 +47,16 @@ A comprehensive web scraping system for monitoring and extracting news articles 
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd "Prothom Alo Scrapper"
+   git clone https://github.com/ashik5757/Prothom-Alo-Scrapper.git
    ```
+
+   Go to root directory : 
+
+   ```bash
+   cd "Prothom-Alo-Scrapper"
+   ```
+
+
 
 2. **Set up environment variables**
    ```bash
@@ -58,93 +64,64 @@ A comprehensive web scraping system for monitoring and extracting news articles 
    cp .env.example .env
    ```
    
-   Edit the `.env` file with your preferred configurations:
+   Edit the `.env` file with your `DJANGO_SECRET_KEY` configurations:
    ```env
    # Django Settings
    DEBUG=True
    DJANGO_SECRET_KEY=your-secret-key-here
    ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
 
-   # Database
-   DB_NAME=prothom_alo_scrapper
-   DB_USER=django_api
-   DB_PASSWORD=1234
-   DB_HOST=db
-   DB_PORT=3306
 
-   # Redis
-   REDIS_HOST=redis
-   REDIS_PORT=6379
 
-   # Celery
-   CELERY_BROKER_URL=redis://redis:6379/0
-   CELERY_RESULT_BACKEND=redis://redis:6379/0
+   #### Existing CODE...............
 
-   # Elasticsearch
-   ELASTICSEARCH_HOST=elasticsearch
-   ELASTICSEARCH_PORT=9200
-
-   WEB_PORT=8000
-
-   # CORS
-   CORS_ALLOWED_ORIGINS=http://localhost:3000
    ```
+3. **Open two terminal in root directory for backend and frontend.**
 
-3. **Start the backend services**
+    > NOTE : Make sure you're in the root directory : 
+
+    ```bash
+    Prothom-Alo-Scrapper/           # root 
+    ├── README.md
+    ├── backend/       # Django (Backend)
+    │   ├── Dockerfile
+    │   ├── docker-compose.yml
+    │   └── ...
+    └── frontend/      # Next.js (frontend)
+        ├── Dockerfile
+        ├── docker-compose.yml
+        └── ...
+    ```
+
+
+4. **Build and start the backend services**
    ```bash
    cd backend
-   docker-compose up -d
    ```
 
-4. **Start the frontend**
    ```bash
-   cd ../frontend
-   docker-compose up -d
+   docker-compose up --build
    ```
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/api/docs/
 
-## 🛠️ Development Setup
 
-### Backend Development
-
-1. **Start backend services**
-   ```bash
-   cd backend
-   docker-compose up -d
-   ```
-
-2. **Check service health**
-   ```bash
-   docker-compose ps
-   ```
-
-3. **View logs**
-   ```bash
-   # All services
-   docker-compose logs -f
-   
-   # Specific service
-   docker-compose logs -f web
-   docker-compose logs -f celery
-   docker-compose logs -f celery_beat
-   ```
-
-### Frontend Development
-
-1. **Start frontend**
+5. **Build and start the frontend services**
    ```bash
    cd frontend
-   docker-compose up -d
+   ```
+   ```bash
+   docker-compose up --build
    ```
 
-2. **View frontend logs**
-   ```bash
-   docker-compose logs -f nextjs
-   ```
+
+
+
+6. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000/api/tasks/
+   - API Documentation: http://localhost:8000/api/docs/
+
+
 
 ## 📖 Usage Guide
 
@@ -180,8 +157,8 @@ A comprehensive web scraping system for monitoring and extracting news articles 
 - `DELETE /api/tasks/{id}/` - Delete task
 
 ### Content
-- `GET /api/tasks/{id}/contents/` - Get task contents
-- `GET /api/tasks/{id}/elastic-search/` - Search task contents
+- `GET /api/tasks/{id}/contents/` - Get task contents FROM MySQL
+- `GET /api/tasks/{id}/elastic-search/` - Search task contents From Elastic Search
 - `GET /api/tasks/elastic-search/` - Generic search
 
 ### Documentation
@@ -253,34 +230,19 @@ A comprehensive web scraping system for monitoring and extracting news articles 
 
 ### Performance Optimization
 
-1. **Increase scraping concurrency**
+
    - Modify `celery worker --concurrency=2` in docker-compose.yml
 
-2. **Elasticsearch memory**
    - Adjust `ES_JAVA_OPTS=-Xms512m -Xmx512m` for larger datasets
 
-3. **Database optimization**
-   - Consider indexing frequently queried fields
-   - Use connection pooling for high traffic
 
-## 🔒 Security Considerations
-
-- Change default passwords in production
-- Use environment variables for sensitive data
-- Implement proper authentication for production use
-- Consider rate limiting for API endpoints
-- Use HTTPS in production
 
 ## 📝 Development Notes
 
-### Adding New Categories
-Update the `categoryOptions` array in:
-- [`frontend/src/app/tasklist/page.js`](frontend/src/app/tasklist/page.js)
-- [`frontend/src/app/generic-search/page.js`](frontend/src/app/generic-search/page.js)
 
-### Modifying Scraping Logic
+### Updating API docs
 Edit the scraping logic in:
-- [`backend/api/scrapper.py`](backend/api/scrapper.py)
+- [`backend/api/views.py`](backend/api/views.py)
 
 ### Database Migrations
 ```bash
@@ -320,6 +282,8 @@ docker-compose down -v
 - Elasticsearch: http://localhost:9200/_cluster/health
 - Frontend: http://localhost:3000
 
+
+<!-- 
 ### Logs
 - Application logs: `docker-compose logs -f web`
 - Celery logs: `docker-compose logs -f celery`
@@ -339,4 +303,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## ⚠️ Disclaimer
 
-This tool is for educational and research purposes. Please respect the target website's robots.txt and terms of service. Use responsibly and consider the impact on the target server.
+This tool is for educational and research purposes. Please respect the target website's robots.txt and terms of service. Use responsibly and consider the impact on the target server. -->
