@@ -61,7 +61,10 @@ class ScrapingTaskDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ScrapingTask.objects.all()
     serializer_class = ScrapingTaskSerializer
 
-
+    @extend_schema(
+            summary="Update a scraping task",
+            description="Updates a scraping task and reschedules it if necessary",
+    )
     def update(self, request, *args, **kwargs):
 
         partial = kwargs.pop('partial', True)
@@ -93,6 +96,10 @@ class ScrapingTaskDetail(generics.RetrieveUpdateDestroyAPIView):
 class ScrapingTaskContentList(generics.ListAPIView):
     serializer_class = ContentSerializer
 
+    @extend_schema(
+        summary="Get content for a specific scraping task",
+        description="Returns all content items scraped by the specified task"
+    )
     def get_queryset(self):
         task_id = self.kwargs['pk']
         return Content.objects.filter(scraping_task_id=task_id)
@@ -101,6 +108,63 @@ class ScrapingTaskContentList(generics.ListAPIView):
 
 
 class ScrappingTaskElasticSearchList(APIView):
+
+    @extend_schema(
+        summary="Search content for a specific task",
+        description="Search and filter content from a specific scraping task using Elasticsearch",
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Search term to look for in title, author, location, time, and story'
+            ),
+            OpenApiParameter(
+                name='author',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by author name'
+            ),
+            OpenApiParameter(
+                name='author_location',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by author location'
+            ),
+            OpenApiParameter(
+                name='published_time_from',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='Filter articles published after this date (ISO format)'
+            ),
+            OpenApiParameter(
+                name='published_time_to',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='Filter articles published before this date (ISO format)'
+            ),
+            OpenApiParameter(
+                name='sort_by_published_time',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Sort by published time (asc/desc)'
+            ),
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "task_id": {"type": "string"},
+                    "task_category": {"type": "string"},
+                    "total_articles": {"type": "integer"},
+                    "search_params": {"type": "object"},
+                    "articles": {"type": "array"}
+                }
+            },
+            404: {"description": "Scraping task not found"},
+            500: {"description": "Internal server error"}
+        }
+    )
 
     def get(self, request, pk):
 
@@ -198,6 +262,56 @@ class ScrappingTaskElasticSearchList(APIView):
 
 
 class GenericElasticSearchList(APIView):
+
+    @extend_schema(
+        summary="Search all content",
+        description="Search and filter all content across all scraping tasks using Elasticsearch",
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Search term to look for in title, author, location, time, and story'
+            ),
+            OpenApiParameter(
+                name='category',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by category'
+            ),
+            OpenApiParameter(
+                name='author',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by author name'
+            ),
+            OpenApiParameter(
+                name='author_location',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by author location'
+            ),
+            OpenApiParameter(
+                name='published_time_from',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='Filter articles published after this date (ISO format)'
+            ),
+            OpenApiParameter(
+                name='published_time_to',
+                type=OpenApiTypes.DATETIME,
+                location=OpenApiParameter.QUERY,
+                description='Filter articles published before this date (ISO format)'
+            ),
+            OpenApiParameter(
+                name='sort_by_published_time',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Sort by published time (asc/desc)'
+            ),
+        ]
+    )
+
 
     def get(self, request):
 
