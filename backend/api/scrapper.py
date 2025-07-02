@@ -10,6 +10,7 @@ from api.schedule import update_task_schedule
 from .models import ScrapingTask, Content
 from .es_client import es, INDEX_NAME
 from celery import shared_task
+from .minio_client import upload_image, upload_multiple_images
 from django.utils import timezone
 
 from selenium.webdriver.common.by import By
@@ -221,12 +222,45 @@ def scrape_and_store(scraping_task_id):
                     pass
 
                 article_data["main_story"] = main_story.strip()
+
+
+               
+                images_data = {
+                    'cover_image': None,
+                    'story_images': []
+                }
+
+                # Scrape cover image (top image)
+                try:
+                    cover_img_element = driver.find_element(By.CSS_SELECTOR, "div.Td4Ec img")
+                    cover_img_src = cover_img_element.get_attribute("src")
+                    if cover_img_src and not cover_img_src.endswith('media-placeholder.svg'):
+                        images_data['cover_image'] = cover_img_src
+                        print(f"Found cover image: {cover_img_src}")
+                except (NoSuchElementException, TimeoutException):
+                    print("Cover image not found")
+
+                # Scrape story images
+                try:
+                    story_img_elements = driver.find_elements(By.CSS_SELECTOR, "div.woq9M img")
+                    for img_element in story_img_elements:
+                        img_src = img_element.get_attribute("src")
+                        if img_src and not img_src.endswith('media-placeholder.svg'):
+                            images_data['story_images'].append(img_src)
+                    
+                    print(f"Found {len(images_data['story_images'])} story images")
+                    
+                except (NoSuchElementException, TimeoutException):
+                    print("Story images not found")
+
+                article_data["images_data"] = images_data
+
+
                 return article_data
             
             except Exception as e:
                 print(f"Error scraping content details for {article_url}: {e}")
                 return {}
-            
 
 
 
@@ -261,8 +295,31 @@ def scrape_and_store(scraping_task_id):
                 )
                 if created:
                     content_created += 1
+                    
+                    # Upload images to MinIO if they exist
+                    images_data = article.get("images_data", {})
+                    if images_data and (images_data.get('cover_image') or images_data.get('story_images')):
+                        uploaded_images = upload_multiple_images(
+                            content_id=obj.id,
+                            image_urls_data=images_data,
+                            published_time=article.get("published_time", "")
+                        )
+                        
+                        # Update Content object with image paths
+                        if uploaded_images['cover_image_path']:
+                            obj.cover_image_s3_path = uploaded_images['cover_image_path']
+                            print(f"Uploaded cover image to S3: {uploaded_images['cover_image_path']}")
+                        
+                        if uploaded_images['story_images_paths']:
+                            obj.set_story_images_paths(uploaded_images['story_images_paths'])
+                            print(f"Uploaded {len(uploaded_images['story_images_paths'])} story images to S3")
+                    
+                    obj.save()
+                    print(f"Content object saved: {obj.id}")
+
             except Exception as e:
                 print(f"Error creating content: {e}")
+                continue
 
         
         driver.quit()
