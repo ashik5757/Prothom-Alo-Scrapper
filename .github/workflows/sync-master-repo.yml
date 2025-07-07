@@ -1,4 +1,3 @@
-# .github/workflows/sync-master-repo.yml
 name: Sync Master Repo
 
 on:
@@ -6,58 +5,45 @@ on:
     - cron: '*/5 * * * *'  # Run every 5 minutes
   push:
     branches:
-      - master  # Trigger on push to master branch
-  workflow_dispatch:  # Allow manual trigger
+      - master
+  workflow_dispatch:
 
 jobs:
-  sync-backend:
+  sync-repos:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    
     steps:
       - name: Checkout main repo
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MASTER_SYNC_TOKEN }}  # Use PAT for private repos
           fetch-depth: 0
 
-      - name: Add backend remote
-        run: |
-          git remote add backend https://github.com/ashik5757/Prothom_Alo_Scrapper.git || true
-          git fetch backend
-
-      - name: Sync backend changes
-        run: |
-          git subtree pull --prefix=backend backend master --squash || true
-
-      - name: Commit and push changes
+      - name: Configure git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
-          git diff --staged --quiet || git commit -m "Sync backend changes"
-          git push origin master
 
-  sync-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout main repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Add frontend remote
+      - name: Sync backend from private repo
         run: |
-          git remote add frontend https://github.com/ashik5757/prothomalo_scrapping.git || true
-          git fetch frontend
+          echo "Syncing backend repository..."
+          git subtree pull --prefix=backend https://${{ secrets.MASTER_SYNC_TOKEN }}@github.com/ashik5757/Prothom_Alo_Scrapper.git master --squash || echo "No backend changes or first sync"
 
-      - name: Sync frontend changes
+      - name: Sync frontend from private repo
         run: |
-          git subtree pull --prefix=frontend frontend master --squash || true
+          echo "Syncing frontend repository..."
+          git subtree pull --prefix=frontend https://${{ secrets.MASTER_SYNC_TOKEN }}@github.com/ashik5757/prothomalo_scrapping.git master --squash || echo "No frontend changes or first sync"
 
       - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
           git add .
-          git diff --staged --quiet || git commit -m "Sync frontend changes"
-          git push origin master
+          if ! git diff --staged --quiet; then
+            git commit -m "Sync repositories - $(date '+%Y-%m-%d %H:%M:%S')"
+            git push origin master
+            echo "Changes committed and pushed"
+          else
+            echo "No changes to commit"
+          fi
