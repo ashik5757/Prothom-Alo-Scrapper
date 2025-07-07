@@ -1,0 +1,60 @@
+# .github/workflows/sync-master-repo.yml
+name: Sync Master Repo
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Run every 6 hours
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Add backend remote
+        run: |
+          git remote add backend https://github.com/ashik5757/Prothom_Alo_Scrapper.git || true
+          git fetch backend
+
+      - name: Sync backend changes
+        run: |
+          git subtree pull --prefix=backend backend master --squash || true
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff --staged --quiet || git commit -m "Sync backend changes"
+          git push origin master
+
+  sync-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Add frontend remote
+        run: |
+          git remote add frontend https://github.com/ashik5757/prothomalo_scrapping.git || true
+          git fetch frontend
+
+      - name: Sync frontend changes
+        run: |
+          git subtree pull --prefix=frontend frontend master --squash || true
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff --staged --quiet || git commit -m "Sync frontend changes"
+          git push origin master
