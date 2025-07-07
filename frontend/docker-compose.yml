@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   nextjs:
-    container_name: prothomalo_scrapping_frontend
+    container_name: prothomalo_nextjs_app
     build:
       context: .
     restart: unless-stopped
