@@ -30,12 +30,12 @@ jobs:
       - name: Sync backend from private repo
         run: |
           echo "Syncing backend repository..."
-          git subtree pull --prefix=backend https://${{ secrets.MASTER_SYNC_TOKEN }}@github.com/ashik5757/Prothom_Alo_Scrapper.git master --squash || echo "No backend changes or first sync"
+          git subtree pull --prefix=backend https://${{ secrets.MASTER_SYNC_TOKEN }}@github.com/ashik5757/Prothom_Alo_Scrapper.git main --squash || echo "No backend changes or first sync"
 
       - name: Sync frontend from private repo
         run: |
           echo "Syncing frontend repository..."
-          git subtree pull --prefix=frontend https://${{ secrets.MASTER_SYNC_TOKEN }}@github.com/ashik5757/prothomalo_scrapping.git master --squash || echo "No frontend changes or first sync"
+          git subtree pull --prefix=frontend https://${{ secrets.MASTER_SYNC_TOKEN }}@github.com/ashik5757/prothomalo_scrapping.git main --squash || echo "No frontend changes or first sync"
 
       - name: Commit and push changes
         run: |
