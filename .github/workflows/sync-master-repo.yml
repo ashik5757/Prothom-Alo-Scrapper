@@ -3,7 +3,10 @@ name: Sync Master Repo
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Run every 6 hours
+    - cron: '*/5 * * * *'  # Run every 5 minutes
+  push:
+    branches:
+      - master  # Trigger on push to master branch
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
